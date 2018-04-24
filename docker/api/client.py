@@ -358,12 +358,12 @@ class APIClient(
         for out in response.iter_content(chunk_size, decode):
             yield out
 
-    def _read_from_socket(self, response, stream, tty=False):
+    def _read_from_socket(self, response, stream, tty=False, demux=False):
         socket = self._get_raw_response_socket(response)
 
         gen = None
         if tty is False:
-            gen = frames_iter(socket)
+            gen = frames_iter(socket, demux)
         else:
             gen = socket_raw_iter(socket)
 

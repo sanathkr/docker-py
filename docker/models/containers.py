@@ -71,11 +71,14 @@ class Container(Model):
             stream (bool): Return container output progressively as an iterator
                 of strings, rather than a single string.
             logs (bool): Include the container's previous output.
+            demux (bool): Demultiplex stdout and stderr streams and returns a iterator with stream type and string data.
+                Frame Type is 1 for output from stdout, and Frame Type is 2 for output from stderr
 
         Returns:
             By default, the container's output as a single string.
 
             If ``stream=True``, an iterator of output strings.
+            If ``demux=True and stream=True``, an iterator that returns tuple of frame type, output string.
 
         Raises:
             :py:class:`docker.errors.APIError`

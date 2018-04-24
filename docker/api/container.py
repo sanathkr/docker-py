@@ -13,7 +13,7 @@ from ..types import (
 class ContainerApiMixin(object):
     @utils.check_resource('container')
     def attach(self, container, stdout=True, stderr=True,
-               stream=False, logs=False):
+               stream=False, logs=False, demux=False):
         """
         Attach to a container.
 
@@ -28,11 +28,14 @@ class ContainerApiMixin(object):
             stream (bool): Return container output progressively as an iterator
                 of strings, rather than a single string.
             logs (bool): Include the container's previous output.
+            demux (bool): Demultiplex stdout and stderr streams and returns a iterator with stream type and string data.
+                Frame Type is 1 for output from stdout, and Frame Type is 2 for output from stderr
 
         Returns:
             By default, the container's output as a single string.
 
             If ``stream=True``, an iterator of output strings.
+            If ``demux=True and stream=True``, an iterator that returns tuple of frame type, output string.
 
         Raises:
             :py:class:`docker.errors.APIError`
@@ -54,7 +57,8 @@ class ContainerApiMixin(object):
         response = self._post(u, headers=headers, params=params, stream=True)
 
         output = self._read_from_socket(
-            response, stream, self._check_is_tty(container)
+            response, stream, self._check_is_tty(container),
+            demux=demux
         )
 
         if stream:

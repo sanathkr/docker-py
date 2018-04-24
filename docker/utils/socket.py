@@ -58,18 +58,19 @@ def next_frame_size(socket):
     try:
         data = read_exactly(socket, 8)
     except SocketError:
-        return -1
+        return -1, -1
 
-    _, actual = struct.unpack('>BxxxL', data)
-    return actual
+    frame_type, frame_size = struct.unpack('>BxxxL', data)
+    return frame_type, frame_size
 
 
-def frames_iter(socket):
+def frames_iter(socket, demux=False):
     """
-    Returns a generator of frames read from socket
+    Returns a generator of frames read from socket. If ``demux`` is True, then the generator yields a tuple of
+    frame type and frame data.
     """
     while True:
-        n = next_frame_size(socket)
+        frame_type, n = next_frame_size(socket)
         if n < 0:
             break
         while n > 0:
@@ -81,7 +82,10 @@ def frames_iter(socket):
                 # We have reached EOF
                 return
             n -= data_length
-            yield result
+            if demux:
+                yield frame_type, result
+            else:
+                yield result
 
 
 def socket_raw_iter(socket):
